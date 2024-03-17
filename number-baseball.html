@@ -1,0 +1,113 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>숫자야구</title>
+</head>
+<body>
+<span id ="try">남은 도전 횟수: 10</span>
+<form id="form"> <!--input 쓸때 감싸줌-->
+    <input type="text" id ="input">
+    <button>확인</button>
+</form>
+<!--사용자 기록-->
+<div id="logs"></div>
+<script>
+	const $input = document.querySelector('#input');
+	const $form = document.querySelector('#form');
+	const $logs = document.querySelector('#logs');
+	const $try = document.querySelector('#try');
+	
+	const numbers = []; // 1~9까지 배열에 저장
+	for (let n = 0; n < 9; n++) {
+		numbers.push(n + 1);
+	}
+	const answer = [];
+	for (let n = 0; n < 4; n++) { // 숫자 4개(n) 뽑기
+		const index = Math.floor(Math.random() * numbers.length); // 0~8 정수
+		answer.push(numbers[index]); // 배열 해당 인덱스에 있는 숫자 넣어주기
+		numbers.splice(index, 1); // 중복 피하기 위해 나온 숫자는 삭제해줌
+	}
+	
+	const tries = [];
+	function checkInput(input) { // 검사하는 코드
+		if (input.length !== 4) { // 4자리가 아닐 때
+			return alert('4자리 숫자를 입력해 주세요.');
+		}
+		if (new Set(input).size !== 4) { // 중복된 숫자가 있는가
+			return alert('중복되지 않게 입력해 주세요.');
+		}
+		if (tries.includes(input)) { // 이미 시도한 값인지
+			return alert('이미 시도한 값입니다.');
+		}
+		if (input.includes(0)) { // 0을 포함할때
+			return alert('1~9의 숫자를 입력해 주세요.');
+		}
+		return true; // 값이 유효할 때
+	}
+
+	function resetTry() {
+		$try.textContent = '남은 도전 횟수: 0';
+	}
+
+	function defeated() {
+		resetTry();
+		let defeatTxt = document.createElement('span');
+		defeatTxt.style = 'color: red; font-weight: bold';
+		defeatTxt.innerHTML = '실패!<br/>';
+		$logs.append(defeatTxt, `정답은 ${answer.join('')}`);
+	}
+
+	let out = 0;
+	$form.addEventListener('submit', (event) => {
+		event.preventDefault();
+		const value = $input.value;
+		$input.value = ''; // 변수 저장 후 입력창 지우기
+		if (!checkInput(value)) { // 값을 검사하는 함수로 넘겨줌.
+			return; // 입력 문제 있을 시 중단
+		}
+		// 입력값 문제 없음
+		if (answer.join('') === value) { // [3, 1, 4, 6] → ’3146’
+			resetTry();
+			let homerunTxt = document.createElement('span');
+			homerunTxt.style = 'color: blue; font-weight: bold';
+			homerunTxt.innerHTML = '홈런!';
+			$logs.append(`${value}: `, homerunTxt);
+			return;
+		}
+		if (tries.length >= 9) { // 10번 시도시 졌다고 표시(이전 기록 9개)
+			defeated();
+			return;
+		}
+		// 볼, 스트라이크 계산
+		let strike = 0;
+		let ball = 0;
+		// ex) answer: 3146, value: 1234
+		for (let i = 0; i < 4; i++) {
+			const index = value.indexOf(answer[i]); // i가 0일때 value에 3이 들어있는지 인덱스를 반환
+			if (index > -1) { // 일치하는 숫자 발견
+				if (index === i) { // 자릿수(인덱스) 일치
+					strike++;
+				} else { // 숫자만 일치
+					ball++;
+				}
+			}
+		}
+		if (ball === 0 && strike === 0) {
+			out++;
+			let outTxt = document.createElement('span');
+			outTxt.style.color = 'red';
+			outTxt.innerHTML = `${out} OUT`;
+			$logs.append(`${value}: `, outTxt, document.createElement('br'));
+		} else {
+			$logs.append(`${value}: ${strike} STRIKE ${ball} BALL`, document.createElement('br'));// 태그와 함께 넣을 수 있다
+		}
+		if (out === 3) {
+			defeated();
+			return;
+		}
+		tries.push(value);
+		$try.textContent = `남은 도전 횟수: ${10 - tries.length}`
+	});
+</script>
+</body>
+</html>
