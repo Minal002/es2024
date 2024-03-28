@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<title>로또 추첨기</title>
+<style>
+.ball {
+	display: inline-block;
+	border: 2px solid black;
+	border-radius: 20px;
+	width: 40px;
+	height: 40px;
+	line-height: 40px;
+	font-size: 20px;
+	text-align: center;
+	margin-right: 20px;
+}
+</style>
+</head>
+<body>
+<form id="form">
+<input name="input" size=30 placeholder="숫자 6개를 쉼표로 구분해서 입력하세요." />
+<button>추첨</button>
+</form>
+<div id="result">당첨 숫자: </div>
+<div id="bonus">보너스 숫자: </div>
+<script>
+const $form = document.querySelector('#form');
+const $result = document.querySelector('#result');
+const $bonus = document.querySelector('#bonus');
+function drawBall(number, $parent) {
+	const $ball = document.createElement('div');
+	$ball.className = 'ball';
+	$ball.textContent = number;
+	colorize(number, $ball);
+	$parent.appendChild($ball);
+}
+function colorize(number, $tag) {
+	if (number < 10) {
+		$tag.style.backgroundColor = 'red';
+		$tag.style.color = 'white';
+	} else if (number < 20) {
+		$tag.style.backgroundColor = 'orange';
+	} else if (number < 30) {
+		$tag.style.backgroundColor = 'yellow';
+	} else if (number < 40) {
+		$tag.style.backgroundColor = 'blue';
+		$tag.style.color = 'white';
+	} else {
+		$tag.style.backgroundColor = 'green';
+		$tag.style.color = 'white';
+	}
+}
+const setTimeoutPromise = (ms) => new Promise((resolve, reject) => {
+	setTimeout(resolve, ms);
+});
+let clicked = false; // 플래그 변수
+$form.addEventListener('submit', async (event) => {
+	event.preventDefault();
+	if (clicked) { // 추첨중일때 재실행 못하게
+		return;
+	}
+	clicked = true;
+	$result.innerHTML = '당첨 숫자: ';
+	$bonus.innerHTML = '보너스 숫자: ';
+	// 검사
+	const string = event.target.input.value; // '1,2,3,4,5,6'
+	if (!string.trim()) { // '' falsy
+		return alert('숫자를 입력하세요.');
+	}
+	const myNumbers = string.split(',').map((v) => parseInt(v.trim())); // 고차함수
+	if (myNumbers.length !== 6) {
+		return alert('숫자를 6개 입력하세요.');
+	}
+	if (new Set(myNumbers).size < 6) {
+		return alert('중복된 숫자를 입력했습니다.');
+	}	
+	if (myNumbers.filter((v) => v < 46 && v > 0).length < 6) {
+		return alert('1부터 45까지만 입력할 수 있습니다.');
+	}
+	// 공 추첨
+	const candidate = Array(45).fill().map((v, i) => i + 1); // 45까지 배열
+	const shuffle = [];
+	while (candidate.length) {
+		const random = candidate.splice(Math.floor(Math.random() * candidate.length), 1)[0]; // 삭제한 값이 random에 저장(slice는 배열 반환)
+		shuffle.push(random); // 뽑은 숫자(45개 다 섞기)
+	}
+	const winBalls = shuffle.slice(0, 6).sort((a, b) => a - b); // 추첨된 공, 정렬
+	const bonusBall = shuffle[6]; // 마지막 공이 보너스 공
+	
+	for (let i = 0; i < winBalls.length; i++) {
+		await setTimeoutPromise(1000); // 1초 기다림
+		drawBall(winBalls[i], $result);
+	}
+	await setTimeoutPromise(1000);
+	drawBall(bonusBall, $bonus);
+	await setTimeoutPromise(1000);
+	let count = 0;
+	myNumbers.forEach((my) => {
+		if (winBalls.includes(my)) {
+			count++;
+		}
+	});
+	if (count === 6) {
+		alert('축하합니다 1등입니다!');
+	} else if (count === 5 && myNumbers.includes(bonusBall)) {
+		alert('축하합니다 2등입니다!');
+	} else if (count > 2) {
+		alert(`축하합니다 ${Math.abs(count - 8)}등 입니다!`);
+	} else {
+		alert('꽝입니다!');
+	}
+	clicked = false;
+});
+</script>
+</body>
+</html>
