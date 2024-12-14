@@ -1,57 +1,69 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-	<meta charset="UTF-8">
-	<title>끝말잇기</title>
+  <meta charset="UTF-8">
+  <title>끝말잇기</title>
 </head>
+
 <body>
-<div><span id="order">1</span>번째 참가자</div>
-<div>제시어: <span id="word"></span></div>
-<input type="text" onkeydown="enterKey()">
-<button>입력</button>
-<script>
-	const $button = document.querySelector('button');
-	const $input = document.querySelector('input');
-	const $word = document.querySelector('#word');
-	const $order = document.querySelector('#order');
-	let word;
-	let newWord;
-	let number;
-	let yesOrNo;
+  <div><span id="order">1</span>번째 참가자</div>
+  <div>제시어: <span id="word"></span></div>
+  <input type="text" placeholder="단어를 입력하세요">
+  <button>입력</button>
+  <script>
+    const $button = document.querySelector('button');
+    const $input = document.querySelector('input');
+    const $word = document.querySelector('#word');
+    const $order = document.querySelector('#order');
+    let word;
+    let newWord;
+    let number;
+    let yesOrNo;
 
-	while (!number || !yesOrNo) { // 0명일때, 아니오 일때(true) 반복
-		number = Number(prompt('몇 명이 참가하나요?'), 10); // 10진법은 생략 가능
-		if (number) {
-			yesOrNo = confirm(number + '명 맞나요?');
-		}
-	}
+    while (!number || !yesOrNo) { // 0명일때, 아니오 일때(true) 반복
+      number = Number(prompt('몇 명이 참가하나요?'), 10); // 10진법은 생략 가능
+      if (number) {
+        yesOrNo = confirm(number + '명 맞나요?');
+      }
+    }
 
-	const onClickButton = () => {
-		if ((!word || newWord[0] === word[word.length - 1]) && newWord.length > 1) {
-			word = newWord;
-			$word.textContent = word;
-			const order = Number($order.textContent);
-			if (order === number) {
-				$order.textContent = 1;
-			} else {
-				$order.textContent = order + 1;
-			}
-		} else {
-			alert('올바르지 않은 단어입니다!');
-		}
-		$input.value = '';
-		$input.focus();
-	};
-	const onInput = (event) => {
-		newWord = event.target.value;
-	};
-	function enterKey() {
-		if (window.event.keyCode == 13) {
-			onClickButton();
-		}
-	}
-	$button.addEventListener('click', onClickButton);
-	$input.addEventListener('input', onInput);
-</script>
+    const onClickButton = () => {
+      if ((!word || newWord[0] === word[word.length - 1]) && newWord.length > 1) {
+        word = newWord;
+        $word.textContent = word;
+        const order = Number($order.textContent);
+        if (order === number) {
+          $order.textContent = 1;
+        } else {
+          $order.textContent = order + 1;
+        }
+      } else {
+        alert('올바르지 않은 단어입니다!');
+      }
+      $input.value = '';
+      newWord = '';
+      $input.focus();
+    };
+
+    const onInput = (event) => {
+      newWord = event.target.value;
+    };
+
+    function enterKey() {
+      if (window.event.keyCode == 13) {
+        onClickButton();
+      }
+    }
+    
+    $button.addEventListener('click', onClickButton);
+    $input.addEventListener('input', onInput);
+    $input.addEventListener('keyup', function (event) {
+    if (event.key === 'Enter' && event.target.value) {  // input에 값이 있을 때만
+        onClickButton();
+    }
+});
+  </script>
 </body>
-</html> 
+
+</html>
